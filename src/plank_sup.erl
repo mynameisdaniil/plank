@@ -24,15 +24,21 @@ start_link() ->
 
 init([]) ->
   {ok, ElliOpts} = application:get_env(web),
-  lager:info("~p", [ElliOpts]),
+  WorkersPool = poolboy:child_spec(scheduler, [
+      {name, {local, scheduler}},
+      {worker_module, scheduler},
+      {size, 2},
+      {max_overflow, 0}
+    ], []),
   {ok, { {one_for_one, 5, 10}, [
-        {fancy_http,
+        {rest,
           {elli, start_link, [ElliOpts]},
           permanent,
           5000,
           worker,
           [elli]
-        }
+        },
+        WorkersPool
       ]}
   }.
 

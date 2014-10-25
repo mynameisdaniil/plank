@@ -1,0 +1,16 @@
+{application, plank,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  lager,
+                  yamerl,
+                  sighandler,
+                  sync
+                 ]},
+  {mod, { plank_app, []}},
+  {env, []}
+ ]}.

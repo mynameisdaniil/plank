@@ -6,15 +6,17 @@
 
 -export([handle/2, handle_event/3]).
 
-handle(Req, Args) ->
+-define(SCHEDULER_CALL(Call), poolboy:transaction(scheduler, fun(W) -> gen_server:call(W, Call) end)).
+
+handle(Req, _Args) ->
   handle(Req#req.method, elli_request:path(Req), Req).
 
-handle('PUT', [<<"schedule">>], Req) ->
-  poolboy:transaction(scheduler,
-    fun(Worker) ->
-        gen_server:call(Worker, {schedule, Req})
-    end);
+handle('PUT', [<<"schedule">>, Timediff], Req) ->
+  ?SCHEDULER_CALL({schedule, Timediff, Req});
 
-handle(_, _, _Req) -> {404, [], <<"Not found">>}.
+handle('GET', [<<"schedule">>, Timediff], _Req) ->
+  ?SCHEDULER_CALL({get, Timediff});
+
+handle(_, _, _) -> {404, [], <<"Not found\n">>}.
 
 handle_event(_Event, _Data, _Args) -> ok.

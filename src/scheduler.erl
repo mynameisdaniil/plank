@@ -13,9 +13,15 @@ start_link(Args) ->
 init(_Args) ->
   {ok, undefined}.
 
-handle_call(Call, _From, State) ->
-  lager:info("Handling: ~p", [Call]),
-  {reply, ok, State}.
+handle_call({schedule, Timediff, Payload}, _From, State) ->
+  lager:info("Scheduling: ~s with ~p", [Timediff, Payload]),
+  {reply, {ok, [], Timediff}, State};
+
+handle_call({get, Timediff}, _From, State) ->
+  lager:info("Returning: ~s", [Timediff]),
+  {reply, {ok, [], Timediff}, State};
+
+handle_call(_, _From, State) -> {ok, undefined, State}.
 
 handle_cast(_, State) -> {noreply, State}.
 

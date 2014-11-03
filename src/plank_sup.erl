@@ -24,12 +24,7 @@ start_link() ->
 
 init([]) ->
   {ok, ElliOpts} = application:get_env(web),
-  WorkersPool = poolboy:child_spec(scheduler, [
-      {name, {local, scheduler}},
-      {worker_module, scheduler},
-      {size, 2},
-      {max_overflow, 0}
-    ], []),
+  {ok, HanoiPoolOpts} = application:get_env(hanoi_pool),
   {ok, { {one_for_one, 5, 10}, [
         {rest,
           {elli, start_link, [ElliOpts]},
@@ -38,7 +33,20 @@ init([]) ->
           worker,
           [elli]
         },
-        WorkersPool
+        {hanoi_pool,
+          {hanoi_pool, start_link, [HanoiPoolOpts]},
+          permanent,
+          infinity,
+          supervisor,
+          [hanoi_pool]
+        },
+        {scheduler_pool,
+          {scheduler_pool, start_link, []},
+          permanent,
+          infinity,
+          supervisor,
+          [scheduler_pool]
+        }
       ]}
   }.
 

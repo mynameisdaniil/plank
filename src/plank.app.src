@@ -1,3 +1,4 @@
+%% vim: set ft=erlang:
 {application, plank,
  [
   {description, ""},

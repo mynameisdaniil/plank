@@ -2,3 +2,4 @@
 log/
 ebin/
 data/
+erl_crash.dump

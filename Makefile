@@ -22,5 +22,8 @@ deps:
 update:
 	$(REBAR) update-deps
 
+observer:
+	$(ERL) -sname observer -hidden -setcookie testcookie -run observer
+
 run:
-	$(ERL) -setcookie testcookie -pa $(DEPS)/*/ebin -pa $(BIN) -config $(CONF) -eval "application:ensure_all_started($(APP))"
+	$(ERL) -setcookie testcookie -sname $(APP) -pa $(DEPS)/*/ebin -pa $(BIN) -config $(CONF) -eval "application:ensure_all_started($(APP))"

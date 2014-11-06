@@ -42,10 +42,12 @@ init(HanoiPoolOpts) ->
 transaction(Key, Fun) ->
   gen_server:call(?MODULE, {transaction, Key, Fun}).
 
-handle_call({transaction, Key, Fun}, _From, {pool = Pool, pool_size = PoolSize} = State) ->
+handle_call({transaction, Key, Fun}, From, #state{pool = Pool, pool_size = PoolSize} = State) ->
   Worker = maps:get(erlang:phash2(Key, PoolSize), Pool),
-  spawn(fun()-> Fun(Worker) end),
-  {reply, ok, State};
+  spawn(fun()->
+        gen_server:reply(From, Fun(Worker))
+    end),
+  {noreply, State};
 
 handle_call(_, _From, State) -> {reply, undefined, State}.
 

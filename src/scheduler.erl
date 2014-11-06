@@ -7,19 +7,32 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2]).
 -export([terminate/2, code_change/3]).
 
-start_link(Args) ->
-  gen_server:start_link(?MODULE, Args, []).
+-record(state, {granularity}).
 
-init(_Args) ->
-  {ok, undefined}.
+start_link(SchedulerOpts) ->
+  gen_server:start_link(?MODULE, SchedulerOpts, []).
 
-handle_call({schedule, Timediff, Payload}, _From, State) ->
-  lager:info("Scheduling: ~s with ~p", [Timediff, Payload]),
-  {reply, {ok, [], Timediff}, State};
+init(SchedulerOpts) ->
+  Granularity = proplists:get_value(granularity, SchedulerOpts),
+  lager:info("Granularity:~p", [Granularity]),
+  {ok, #state{granularity = Granularity}}.
 
-handle_call({get, Timediff}, _From, State) ->
-  lager:info("Returning: ~s", [Timediff]),
-  {reply, {ok, [], Timediff}, State};
+handle_call({schedule, TimestampBin, Payload}, _From, #state{granularity = Granularity} = State) ->
+  {MegaSecs, Secs, MicroSecs} = erlang:now(),
+  CurrentTimestamp = (MegaSecs * 1000000 + Secs) * 1000 + MicroSecs div 1000,
+  Timestamp = erlang:binary_to_integer(TimestampBin),
+  Key = erlang:integer_to_binary((Timestamp - CurrentTimestamp) div Granularity),
+  lager:info("Scheduling: ~p with ~p", [Key, Payload]),
+  Result = hanoi_pool:transaction(Key, fun(Worker)->
+        List = case hanoidb:get(Worker, Key) of
+          not_found -> [];
+          {ok, Data} -> erlang:binary_to_term(Data)
+        end,
+        UpdatedList = erlang:term_to_binary([Payload|List]),
+        ok = hanoidb:put(Worker, Key, UpdatedList)
+    end),
+  lager:info("Transaction reply:~p", [Result]),
+  {reply, {ok, [], TimestampBin}, State};
 
 handle_call(_, _From, State) -> {ok, undefined, State}.
 

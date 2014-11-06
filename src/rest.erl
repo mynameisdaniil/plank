@@ -14,9 +14,6 @@ handle(Req, _Args) ->
 handle('PUT', [<<"schedule">>, Timediff], Req) ->
   ?SCHEDULER_CALL({schedule, Timediff, Req});
 
-handle('GET', [<<"schedule">>, Timediff], _Req) ->
-  ?SCHEDULER_CALL({get, Timediff});
-
 handle(_, _, _) -> {404, [], <<"Not found\n">>}.
 
 handle_event(_Event, _Data, _Args) -> ok.

@@ -25,6 +25,7 @@ start_link() ->
 init([]) ->
   {ok, ElliOpts} = application:get_env(web),
   {ok, HanoiPoolOpts} = application:get_env(hanoi_pool),
+  {ok, SchedulerOpts} = application:get_env(scheduler),
   {ok, { {one_for_one, 5, 10}, [
         {rest,
           {elli, start_link, [ElliOpts]},
@@ -36,12 +37,12 @@ init([]) ->
         {hanoi_pool,
           {hanoi_pool, start_link, [HanoiPoolOpts]},
           permanent,
-          infinity,
-          supervisor,
+          5000,
+          worker,
           [hanoi_pool]
         },
         {scheduler_pool,
-          {scheduler_pool, start_link, []},
+          {scheduler_pool, start_link, [SchedulerOpts]},
           permanent,
           infinity,
           supervisor,

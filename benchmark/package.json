@@ -1,0 +1,15 @@
+{
+  "name": "benchmark",
+  "version": "1.0.0",
+  "description": "benchmarking script for plank",
+  "main": "benchmark",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Daniil Sobol",
+  "license": "ISC",
+  "dependencies": {
+    "uuid": "^2.0.1",
+    "yargs": "^1.3.2"
+  }
+}

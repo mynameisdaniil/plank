@@ -1,0 +1,57 @@
+#! /usr/bin/env node
+
+var http = require('http');
+var argv = require('yargs').argv;
+var uuid = require('uuid').v4;
+var log  = console.log;
+
+var timer;
+var counter = 1;
+
+var responseHandler = function (res) {
+  res.on('data', dataHandler);
+  if(!timer)
+    timer = process.hrtime();
+  counter++;
+  if (counter == argv.n)
+    log('time:', process.hrtime(timer));
+};
+
+var dataHandler = function (chunk) {
+};
+
+var errorHandler = function (e) {
+  log('error:', e);
+};
+
+var prepareData = function (howMuch) {
+  var ret = [];
+  var payload = '';
+  for (var i = 0; i < howMuch; i++) {
+    payload = uuid();
+    ret.push({
+      hostname: 'localhost',
+      port: 3000,
+      path: '/schedule/' + (Date.now() + 60000),
+      method: 'PUT',
+      payload: payload,
+      headers: {
+        'Content-length': payload.length
+      }
+    });
+  }
+  return ret;
+};
+
+var data = prepareData(argv.n);
+
+//Start timer
+var tmp;
+var req;
+while(tmp = data.pop()) { //jshint ignore: line
+  req = http.request(tmp);
+  req.on('error', errorHandler);
+  req.on('response', responseHandler);
+  req.end(tmp.payload);
+}
+//Stop timer

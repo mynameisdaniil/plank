@@ -12,7 +12,7 @@ handle(Req, _Args) ->
   handle(Req#req.method, elli_request:path(Req), Req).
 
 handle('PUT', [<<"schedule">>, Timediff], Req) ->
-  ?SCHEDULER_CALL({schedule, Timediff, Req});
+  ?SCHEDULER_CALL({schedule, Timediff, elli_request:body(Req)});
 
 handle(_, _, _) -> {404, [], <<"Not found\n">>}.
 

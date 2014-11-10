@@ -6,6 +6,6 @@ start_link(SchedulerOpts) ->
   poolboy:start_link([
       {name, {local, scheduler}},
       {worker_module, scheduler},
-      {size, 2},
+      {size, proplists:get_value(pool_size, SchedulerOpts)},
       {max_overflow, 0}
     ], SchedulerOpts).
